@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - User Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Blue Theme Overrides */
+        body {
+            background-color: #dbeafe !important;
+            background-image: radial-gradient(#1a3a8a 1.5px, transparent 0) !important;
+            background-size: 24px 24px !important;
+            min-height: 100vh;
+        }
+
+        .card-blue {
+            background-color: #ffffff;
+            border: 2px solid #93c5fd;
+            border-radius: 16px;
+            box-shadow: 0 6px 0 #1a3a8a;
+        }
+
+        .card-blue:hover {
+            box-shadow: 0 8px 0 #1a3a8a;
+            transform: translateY(-2px);
+        }
+
+        .btn-blue {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 0 #1a3a8a;
+            transition: all 0.1s ease;
+        }
+
+        .btn-blue:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-blue:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1a3a8a;
+        }
+
+        .btn-sort-blue {
+            background-color: #1e3a5f;
+            color: white;
+            border: 2px solid #93c5fd;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sort-blue:hover {
+            background-color: #1a3a8a;
+        }
+
+        .btn-sort-blue .sort-icon {
+            background-color: #1a3a8a;
+            color: #93c5fd;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 10px;
+        }
+
+        .input-blue:focus {
+            border-color: #2563eb !important;
+            outline: 2px solid #2563eb !important;
+            outline-offset: 2px;
+        }
+
+        .header-blue {
+            border-bottom: 2px solid #93c5fd;
+            background-color: #dbeafe;
+        }
+
+        .text-blue-primary {
+            color: #1e3a5f;
+        }
+
+        .text-blue-muted {
+            color: #64748b;
+        }
+
+        .border-blue {
+            border-color: #93c5fd !important;
+        }
+
+        .bg-blue-light {
+            background-color: #dbeafe;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-4 text-[#1e3a5f]">
+    
+    <div id="header-placeholder" class="w-full fixed top-0 left-0 z-50"></div>
+
+    <div class="w-full max-w-2xl card-blue p-6 space-y-6">
+        <div>
+            <h2 class="text-xl font-bold tracking-tight text-[#1e3a5f]">Admin Panel - User Manager</h2>
+            <p class="text-xs text-[#64748b]">Search users, tracking aggregate friend counts, and manage records.</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="relative flex-1">
+                    <input type="text" id="searchInput" placeholder="Search user by name..." 
+                           class="w-full pl-4 pr-4 py-2 bg-white border border-[#93c5fd] rounded-full text-sm text-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2563eb] transition-all">
+                </div>
+                <button onclick="handleSearch()" class="px-5 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-full shadow-[0_4px_0_#1a3a8a] active:shadow-[0_0px_0_#1a3a8a] active:translate-y-[4px] transition-all duration-75 cursor-pointer">
+                    Search
+                </button>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-semibold flex-wrap">
+                <button onclick="resetDisplay()" class="px-4 py-1.5 bg-[#bfdbfe] hover:bg-[#93c5fd] text-[#1e3a5f] border border-[#93c5fd] rounded-lg transition-all cursor-pointer">
+                    Display all
+                </button>
+                <button id="sortFriendBtn" onclick="toggleSortFriends()" class="btn-sort-blue px-4 py-1.5 flex items-center gap-1.5 transition-all cursor-pointer">
+                    Sort by friend <span id="friendSortIcon" class="sort-icon">Desc</span>
+                </button>
+                <button id="sortNameBtn" onclick="toggleSortName()" class="btn-sort-blue px-4 py-1.5 flex items-center gap-1.5 transition-all cursor-pointer">
+                    Sort by name <span id="nameSortIcon" class="sort-icon">A-Z</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="border-2 border-[#93c5fd] rounded-xl overflow-hidden bg-white shadow-[0_4px_0_#1a3a8a]">
+            <div class="grid grid-cols-12 bg-[#bfdbfe] border-b-2 border-[#93c5fd] px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#1e3a5f]">
+                <div class="col-span-4">User Name</div>
+                <div class="col-span-2 text-center">Status</div>
+                <div class="col-span-3 text-center">👥 Num of Friends</div>
+                <div class="col-span-3 text-right pr-2">Actions</div>
+            </div>
+            <div id="userListContainer" class="divide-y divide-[#93c5fd]"></div>
+        </div>
+    </div>
+
+    <div id="userModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-200" onclick="closeUserModal()">
+        <div class="bg-white rounded-2xl shadow-[0_8px_0_#1a3a8a] w-full max-w-md p-6 m-4 relative border-2 border-[#93c5fd] transform scale-95 transition-transform duration-200" onclick="event.stopPropagation()">
+            
+            <div class="flex items-center gap-4 border-b-2 border-[#93c5fd] pb-4 mb-5">
+                <div class="w-14 h-14 rounded-full bg-[#bfdbfe] border-2 border-[#93c5fd] flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+                    <img id="modalUserAvatar" src="https://img.icons8.com/fluency-systems-filled/96/64748b/user-male-circle.png" class="w-12 h-12 object-cover" alt="User Profile Avatar Placeholder">
+                </div>
+                <div>
+                    <h3 id="modalUserName" class="text-lg font-bold text-[#1e3a5f] leading-tight">Loading Profile...</h3>
+                    <p id="modalUserStatus" class="text-xs font-medium text-[#64748b]">Loading...</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-sm mb-6">
+                <div class="grid grid-cols-12 py-1">
+                    <span class="col-span-4 font-semibold text-[#64748b]">Account ID:</span>
+                    <span id="modalUserId" class="col-span-8 text-[#1e3a5f] font-mono text-xs bg-[#bfdbfe] border border-[#93c5fd] px-1.5 py-0.5 rounded w-fit">#0</span>
+                </div>
+                <div class="grid grid-cols-12 py-1">
+                    <span class="col-span-4 font-semibold text-[#64748b]">Email:</span>
+                    <span id="modalUserEmail" class="col-span-8 text-[#1e3a5f] font-medium break-all">...</span>
+                </div>
+                <div class="grid grid-cols-12 py-1">
+                    <span class="col-span-4 font-semibold text-[#64748b]">Phone:</span>
+                    <span id="modalUserPhone" class="col-span-8 text-[#1e3a5f] font-medium">...</span>
+                </div>
+                <div class="grid grid-cols-12 py-1">
+                    <span class="col-span-4 font-semibold text-[#64748b]">Address:</span>
+                    <span id="modalUserAddress" class="col-span-8 text-[#1e3a5f] font-medium text-xs">...</span>
+                </div>
+                <div class="grid grid-cols-12 py-1">
+                    <span class="col-span-4 font-semibold text-[#64748b]">Total Friends:</span>
+                    <span id="modalUserFriends" class="col-span-8 text-[#1e3a5f] font-bold font-mono text-[#2563eb]">0 records</span>
+                </div>
+                <div class="grid grid-cols-12 py-1">
+                    <span class="col-span-4 font-semibold text-[#64748b]">Profile Picture:</span>
+                    <span id="modalUserPicStatus" class="col-span-8 text-[#1e3a5f] font-medium text-xs">...</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="closeUserModal()" class="px-5 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-semibold rounded-full shadow-[0_4px_0_#1a3a8a] active:shadow-[0_0px_0_#1a3a8a] active:translate-y-[4px] transition-all duration-75 cursor-pointer">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let initialUsers = [];
+        let users = [];
+        let friendSortOrder = 'desc';
+        let nameSortOrder = 'asc';
+        let currentSort = '';
+
+        window.onload = function() {
+            fetch('admin_header.html?v=' + Date.now())
+                .then(response => {
+                    if(!response.ok) throw new Error("admin_header.html file not found in folder");
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('header-placeholder').innerHTML = data;
+                    
+                    // --- FIXED TAB HIGHLIGHT LOGIC ---
+                    const dashboardTab = document.getElementById("nav-dashboard");
+                    const managerTab = document.getElementById("nav-manager");
+                    
+                    if(dashboardTab) dashboardTab.classList.remove("active");
+                    if(managerTab) managerTab.classList.add("active"); // Correct tab highlighted
+                })
+                .catch(err => console.error("Error loading header layout:", err));
+
+            document.body.style.paddingTop = "85px";
+            loadUserData();
+        };
+
+        function loadUserData() {
+            fetch('../../php/admin/user_info.php?v=' + Date.now())
+                .then(response => {
+                    if (!response.ok) throw new Error("Could not fetch data from php/admin/user_info.php");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) throw new Error(data.error); 
+                    initialUsers = data;
+                    users = [...initialUsers];
+                    renderUserList(users); 
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('userListContainer').innerHTML = `
+                        <div class="p-6 text-center text-sm text-rose-500 italic font-medium">
+                            Error loading database records.<br>
+                            <span class="text-xs text-[#64748b] block mt-2 bg-[#bfdbfe] p-2 rounded border border-[#93c5fd] font-mono">${err.message}</span>
+                        </div>`;
+                });
+        }
+
+        function renderUserList(dataArray) {
+            const container = document.getElementById('userListContainer');
+            container.innerHTML = ''; 
+
+            if(dataArray.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-sm text-[#64748b] italic">No user accounts found.</div>`;
+                return;
+            }
+
+            dataArray.forEach(user => {
+                const isApproved = parseInt(user.is_approved) === 1;
+                const statusText = isApproved ? 'Approved' : 'Pending';
+                const statusColor = isApproved ? 'text-emerald-600' : 'text-amber-600 font-semibold';
+                
+                const approveAction = !isApproved 
+                    ? `<button onclick="approveUser(${user.id})" class="text-emerald-600 hover:underline font-semibold cursor-pointer" title="Approve Registration">Approve</button>` 
+                    : '';
+
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 items-center px-4 py-3 text-sm text-[#1e3a5f] hover:bg-[#bfdbfe]/50 transition-colors';
+                row.innerHTML = `
+                    <div class="col-span-4 font-medium text-[#1e3a5f]">${user.name} <span class="text-xs text-[#64748b] font-mono block">(ID: #${user.id})</span></div>
+                    <div class="col-span-2 text-center text-xs ${statusColor}">${statusText}</div>
+                    <div class="col-span-3 text-center text-[#1e3a5f] font-mono font-bold">${user.friendsCount} friends</div>
+                    <div class="col-span-3 flex items-center justify-end gap-3 text-xs pr-1">
+                        ${approveAction}
+                        <button onclick="openUserModal(${user.id})" class="text-[#2563eb] hover:underline font-semibold cursor-pointer" title="View Profile">View</button>
+                        <button onclick="deleteUser(${user.id}, '${user.name}')" class="text-rose-600 hover:underline font-semibold cursor-pointer" title="Delete Profile">Delete</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function toggleSortFriends() {
+            const icon = document.getElementById('friendSortIcon');
+            if (friendSortOrder === 'desc') {
+                friendSortOrder = 'asc';
+                icon.textContent = 'Asc';
+                users.sort((a, b) => a.friendsCount - b.friendsCount);
+                currentSort = 'friendsAsc';
+            } else {
+                friendSortOrder = 'desc';
+                icon.textContent = 'Desc';
+                users.sort((a, b) => b.friendsCount - a.friendsCount);
+                currentSort = 'friendsDesc';
+            }
+            document.getElementById('nameSortIcon').textContent = 'A-Z';
+            nameSortOrder = 'asc';
+            renderUserList(users);
+        }
+
+        function toggleSortName() {
+            const icon = document.getElementById('nameSortIcon');
+            if (nameSortOrder === 'asc') {
+                nameSortOrder = 'desc';
+                icon.textContent = 'Z-A';
+                users.sort((a, b) => b.name.localeCompare(a.name));
+                currentSort = 'nameDesc';
+            } else {
+                nameSortOrder = 'asc';
+                icon.textContent = 'A-Z';
+                users.sort((a, b) => a.name.localeCompare(b.name));
+                currentSort = 'nameAsc';
+            }
+            document.getElementById('friendSortIcon').textContent = 'Desc';
+            friendSortOrder = 'desc';
+            renderUserList(users);
+        }
+
+        function approveUser(userId) {
+            if (confirm(`Are you sure you want to approve this user (ID: #${userId})?`)) {
+                const formData = new FormData();
+                formData.append('userid', userId);
+                formData.append('action', 'approve');
+
+                fetch('../../php/admin/user_info.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("User registration approved successfully.");
+                        loadUserData(); 
+                    } else {
+                        alert("Error: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(err => alert("Communication failure: " + err));
+            }
+        }
+
+        function openUserModal(userId) {
+            const modal = document.getElementById('userModal');
+            const modalContent = modal.querySelector('div');
+            
+            document.getElementById('modalUserName').innerText = "Loading Record...";
+            document.getElementById('modalUserId').innerText = `#${userId}`;
+            document.getElementById('modalUserEmail').innerText = "Fetching...";
+            document.getElementById('modalUserPhone').innerText = "Fetching...";
+            document.getElementById('modalUserAddress').innerText = "Fetching...";
+            document.getElementById('modalUserFriends').innerText = "Calculating...";
+            document.getElementById('modalUserStatus').innerText = "Loading...";
+            document.getElementById('modalUserPicStatus').innerText = "Loading...";
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+
+            const TargetUserData = initialUsers.find(u => Number(u.id) === Number(userId));
+            
+            if (TargetUserData) {
+                document.getElementById('modalUserName').innerText = TargetUserData.name;
+                document.getElementById('modalUserEmail').innerText = TargetUserData.email || 'No email provided';
+                document.getElementById('modalUserPhone').innerText = TargetUserData.phone || 'No phone provided';
+                document.getElementById('modalUserAddress').innerText = TargetUserData.address || 'No address provided';
+                document.getElementById('modalUserFriends').innerText = `${TargetUserData.friendsCount} friends registered`;
+                
+                const isApproved = parseInt(TargetUserData.is_approved) === 1;
+                document.getElementById('modalUserStatus').innerHTML = isApproved 
+                    ? '<span class="text-emerald-600 font-semibold">✅ Approved</span>' 
+                    : '<span class="text-amber-600 font-semibold">⏳ Pending</span>';
+                
+                if (TargetUserData.profile_pic && TargetUserData.profile_pic !== 'default_avatar.png') {
+                    document.getElementById('modalUserAvatar').src = '../../img/' + TargetUserData.profile_pic;
+                    document.getElementById('modalUserPicStatus').innerHTML = '<span class="text-emerald-600">✅ Uploaded</span>';
+                } else {
+                    document.getElementById('modalUserAvatar').src = 'https://img.icons8.com/fluency-systems-filled/96/64748b/user-male-circle.png';
+                    document.getElementById('modalUserPicStatus').innerHTML = '<span class="text-[#64748b]">Default avatar</span>';
+                }
+            } else {
+                document.getElementById('modalUserName').innerText = "Account Error";
+                document.getElementById('modalUserEmail').innerText = "Failed to load matching row context.";
+                document.getElementById('modalUserPhone').innerText = "N/A";
+                document.getElementById('modalUserAddress').innerText = "N/A";
+                document.getElementById('modalUserFriends').innerText = "0";
+                document.getElementById('modalUserStatus').innerText = "Unknown";
+                document.getElementById('modalUserPicStatus').innerText = "Unknown";
+            }
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            const modalContent = modal.querySelector('div');
+
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+       function deleteUser(userId, name) {
+    if (confirm(`Are you sure you want to permanently delete user "${name}" (ID: #${userId}) and all of their saved friends?`)) {
+        const formData = new FormData();
+        formData.append('userid', userId);
+        formData.append('action', 'delete');
+
+        fetch('../../php/admin/user_info.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // =============================================
+                // THIS IS THE CRITICAL LINE
+                // =============================================
+                localStorage.setItem('userDeleted', 'true');
+                console.log('✅ userDeleted set to true');
+                
+                alert("User and their corresponding records deleted successfully.");
+                loadUserData(); 
+            } else {
+                alert("Error: " + (data.error || "Unknown error"));
+            }
+        })
+        .catch(err => alert("Communication failure: " + err));
+    }
+}
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (query === '') {
+                users = [...initialUsers];
+                if (currentSort === 'friendsDesc') toggleSortFriends();
+                else if (currentSort === 'friendsAsc') toggleSortFriends();
+                else if (currentSort === 'nameAsc') toggleSortName();
+                else if (currentSort === 'nameDesc') toggleSortName();
+                else renderUserList(users);
+            } else {
+                users = initialUsers.filter(u => u.name.toLowerCase().includes(query));
+                renderUserList(users);
+            }
+        }
+
+        function resetDisplay() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('friendSortIcon').textContent = 'Desc';
+            document.getElementById('nameSortIcon').textContent = 'A-Z';
+            friendSortOrder = 'desc';
+            nameSortOrder = 'asc';
+            currentSort = '';
+            users = [...initialUsers];
+            renderUserList(users);
+        }
+    </script>
+</body>
+</html>

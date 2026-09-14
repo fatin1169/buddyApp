@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Edit User Credentials</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #94a3b8;
+            --btn-blue: #2563eb;
+            --btn-blue-hover: #1d4ed8;
+            --btn-clear: #f1f5f9;
+            --btn-clear-text: #475569;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 120px 15px 40px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 160px);
+            box-sizing: border-box;
+        }
+
+        #header-placeholder {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .form-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            width: 100%;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 30px;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            outline: none;
+            background-color: var(--bg-color);
+        }
+
+        .input-group input:focus {
+            border-color: var(--btn-blue);
+            background-color: #ffffff;
+        }
+
+        .hint-text {
+            display: block;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        .actions-row {
+            text-align: right;
+            margin-top: 24px;
+        }
+
+        .btn {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 9px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 6px;
+            display: inline-block;
+        }
+
+        .btn-save {
+            background-color: var(--btn-blue);
+            color: #ffffff;
+        }
+
+        .btn-save:hover {
+            background-color: var(--btn-blue-hover);
+        }
+
+        .btn-cancel {
+            background-color: var(--btn-clear);
+            color: var(--btn-clear-text);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel:hover {
+            background-color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header-placeholder"></div>
+
+    <div class="container">
+        
+        <div class="top-bar">
+            <h2 class="title">Edit User Account</h2>
+        </div>
+        
+        <form id="editUserForm" class="form-card" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="userId" value="">
+            
+            <div class="input-group">
+                <label for="userName">Account Username</label>
+                <input type="text" id="userName" required autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label for="userEmail">Email Address</label>
+                <input type="email" id="userEmail" required>
+            </div>
+
+            <div class="input-group">
+                <label for="userPassword">Account Password</label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="userPassword" placeholder="••••••••" style="padding-right: 40px;">
+                    <button type="button" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; z-index: 10;">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#94a3b8" style="width: 18px; height: 18px;">
+                            <path id="eyePathClosed" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                            <path id="eyePathOpen" class="hidden" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                            <path id="eyePathOpenPupil" class="hidden" stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
+                <span class="hint-text">(Leave empty to keep password unchanged)</span>
+            </div>
+
+            <div class="actions-row">
+                <button type="button" class="btn btn-cancel" onclick="cancelEdit()">Cancel</button>
+                <button type="submit" class="btn btn-save">Save Changes</button>
+            </div>
+        </form>
+
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Load Shared Header Nav Menu Frame
+            fetch('admin_header.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('header-placeholder').innerHTML = data;
+                }).catch(err => console.log("Shared navbar header bypassed."));
+
+            // Parse Query parameters
+            const params = new URLSearchParams(window.location.search);
+            const targetId = params.get('id');
+
+            if (!targetId) {
+                alert("Critical Error: Missing account target token mapping.");
+                cancelEdit();
+                return;
+            }
+
+            document.getElementById('userId').value = targetId;
+            fetchUserData(targetId);
+        };
+
+        // Fetch User Data row entry
+        function fetchUserData(id) {
+            fetch(`../../php/admin/admin_edit.php?id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error) {
+                        alert("Fetch failed: " + data.error);
+                        cancelEdit();
+                    } else {
+                        document.getElementById('userName').value = data.username || '';
+                        document.getElementById('userEmail').value = data.email || '';
+                    }
+                })
+                .catch(err => alert("Error parsing database source response data context."));
+        }
+
+        function cancelEdit() {
+            window.location.href = "user_info.html";
+        }
+
+        // Processing payload post transactions
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('id', document.getElementById('userId').value);
+            formData.append('username', document.getElementById('userName').value.trim());
+            formData.append('email', document.getElementById('userEmail').value.trim());
+            formData.append('password', document.getElementById('userPassword').value);
+
+            fetch('../../php/admin/admin_edit.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("✅ User account parameters committed successfully!");
+                    cancelEdit();
+                } else {
+                    alert("Save Error Intercepted: " + data.error);
+                }
+            })
+            .catch(err => alert("Communication transaction fault: " + err));
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('userPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            const pathClosed = document.getElementById('eyePathClosed');
+            const pathOpen = document.getElementById('eyePathOpen');
+            const pathOpenPupil = document.getElementById('eyePathOpenPupil');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                pathClosed.style.display = 'none';
+                pathOpen.classList.remove('hidden');
+                pathOpenPupil.classList.remove('hidden');
+                pathOpen.style.display = 'block';
+                pathOpenPupil.style.display = 'block';
+                eyeIcon.setAttribute('stroke', '#2563eb');
+            } else {
+                passwordInput.type = 'password';
+                pathClosed.style.display = 'block';
+                pathOpen.style.display = 'none';
+                pathOpenPupil.style.display = 'none';
+                eyeIcon.setAttribute('stroke', '#94a3b8');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<?php
+// Get the current filename to determine which tab is active
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
+
+<header class="main-navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <span class="brand-icon"></span> Buddy
+        </div>
+        <nav class="nav-links">
+            <a href="admin_dashboard.html" id="nav-dashboard" class="nav-item">Admin Dashboard</a>
+            <a href="user_info.html" id="nav-manager" class="nav-item">User Manager</a>
+            <a href="../../php/sign-out.php" id="nav-sign-out" class="nav-item sign-out-btn" onclick="return confirmSignOut(event);">Sign-out</a>
+        </nav>
+    </div>
+</header>
+
+<style>
+    /* Navigation Bar Styling Rules */
+    .main-navbar {
+        background-color: #ffffff;
+        border-bottom: 1px solid var(--border-color, #e2e8f0);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-container {
+        max-width: 620px;
+        margin: 0 auto;
+        padding: 0 20px;
+        height: 60px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+    }
+
+    .nav-brand {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-main, #1e293b);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .brand-icon {
+        font-size: 18px;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 8px;
+    }
+
+    .nav-item {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+        background-color: #f1f5f9;
+        color: var(--text-main, #1e293b);
+    }
+
+    /* Active Page Navigation Accent State */
+    .nav-item.active {
+        background-color: #eff6ff !important;
+        color: var(--btn-blue, #2563eb) !important;
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Get the full lowercase URL string
+    const currentUrl = window.location.href.toLowerCase();
+    
+    const dashboardLink = document.getElementById("nav-dashboard");
+    const managerLink = document.getElementById("nav-manager");
+
+    // Clean out all active flags first
+    dashboardLink.classList.remove("active");
+    managerLink.classList.remove("active");
+
+    // Use flexible string inclusion matching instead of strict equality
+    if (currentUrl.includes("admin_dashboard")) {
+        dashboardLink.classList.add("active");
+    } else if (currentUrl.includes("user_info")) {
+        managerLink.classList.add("active");
+    }
+});
+
+function confirmSignOut(event) {
+    var verify = confirm("Are you sure you want to sign out of your profile session?");
+    if (!verify) {
+        event.preventDefault();
+        return false;
+    }
+    return true;
+}
+</script>

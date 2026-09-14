@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Island Terminal - Resident Registry</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <style>
+        /* Soft continuous bobbing for icons */
+        @keyframes cozyBob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        /* Playful pop-in for the dashboard container when loaded */
+        @keyframes islandPop {
+            0% { transform: scale(0.95); opacity: 0; }
+            70% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        
+        .animate-cozy-bob {
+            animation: cozyBob 3s ease-in-out infinite;
+        }
+        .animate-island-pop {
+            animation: islandPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Light Blue Background with Blue Dots */
+        body {
+            background-color: #dbeafe !important;
+            background-image: radial-gradient(#1a3a8a 1.5px, transparent 0) !important;
+            background-size: 24px 24px !important;
+            min-height: 100vh;
+        }
+
+        /* Card Styles */
+        .card-dashboard {
+            background-color: #ffffff;
+            border: 4px solid #93c5fd;
+            border-radius: 16px;
+            box-shadow: 0 6px 0 #1a3a8a;
+            transition: all 0.3s ease;
+        }
+
+        .card-dashboard:hover {
+            box-shadow: 0 8px 0 #1a3a8a;
+            transform: translateY(-2px);
+        }
+
+        .card-stat {
+            background-color: #ffffff;
+            border: 4px solid #93c5fd;
+            border-radius: 16px;
+            box-shadow: 0 6px 0 #1a3a8a;
+            transition: all 0.2s ease;
+        }
+
+        .card-stat:hover {
+            box-shadow: 0 8px 0 #1a3a8a;
+            transform: scale(1.02);
+        }
+
+        .icon-box {
+            background-color: #dbeafe;
+            border: 2px solid #93c5fd;
+            border-radius: 12px;
+            color: #2563eb;
+        }
+
+        .btn-open {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 5px 0 #1a3a8a;
+            transition: all 0.1s ease;
+        }
+
+        .btn-open:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-open:active {
+            transform: translateY(5px);
+            box-shadow: 0 0px 0 #1a3a8a;
+        }
+
+        .text-blue-primary {
+            color: #1e3a5f;
+        }
+
+        .text-blue-muted {
+            color: #64748b;
+        }
+
+        .text-blue-accent {
+            color: #2563eb;
+        }
+
+        .flash-update {
+            animation: flashGreen 0.5s ease;
+        }
+        
+        @keyframes flashGreen {
+            0% { background-color: #bbf7d0; }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-4">
+    
+    <div id="header-placeholder" class="w-full fixed top-0 left-0 z-50"></div>
+
+    <div class="w-full max-w-2xl space-y-6 pt-6 animate-island-pop">
+        
+        <!-- Header Card -->
+        <div class="card-dashboard p-5 group">
+            <h2 class="text-2xl font-black tracking-tight text-[#1e3a5f] flex items-center gap-2">
+                <span class="inline-block transition-transform duration-500 group-hover:rotate-360">💙</span> 
+                Admin Dashboard
+            </h2>
+            <p class="text-xs font-semibold text-[#64748b] mt-1">Active user and delete user</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Active Users Card -->
+            <div class="card-stat p-5 flex items-center gap-4 relative overflow-hidden">
+                <div class="w-14 h-14 rounded-xl icon-box flex items-center justify-center text-2xl font-bold shadow-inner animate-cozy-bob">
+                    👥
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-[#64748b] uppercase tracking-widest">Active User</p>
+                    <h3 id="statTotalUsers" class="text-3xl font-black text-[#1e3a5f] mt-0.5 transition-all duration-300">0</h3>
+                </div>
+            </div>
+            
+            <!-- Deleted Users Card -->
+            <div class="card-stat p-5 flex items-center gap-4 relative overflow-hidden" id="deletedCard">
+                <div class="w-14 h-14 rounded-xl icon-box flex items-center justify-center text-2xl font-bold shadow-inner animate-cozy-bob" style="animation-delay: 0.5s;">
+                    🗑️
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-[#64748b] uppercase tracking-widest">Deleted Users</p>
+                    <h3 id="statDeletedUsers" class="text-3xl font-black text-[#2563eb] mt-0.5">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Card -->
+        <div class="card-dashboard p-6 space-y-4">
+            <h3 class="text-sm font-black uppercase tracking-wider text-[#1e3a5f]">User Management</h3>
+            <p class="text-xs leading-relaxed text-[#64748b]">View and manage all user accounts.</p>
+            
+            <div class="pt-2">
+                <a href="user_info.html" class="inline-block px-6 py-3 btn-open text-xs font-black uppercase tracking-wider rounded-full cursor-pointer select-none">
+                    Open User Management ➔
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // =============================================
+        // DELETED USER COUNTER (Stored in localStorage)
+        // =============================================
+        function getDeletedCount() {
+            return parseInt(localStorage.getItem('deletedCount')) || 0;
+        }
+
+        function setDeletedCount(count) {
+            localStorage.setItem('deletedCount', count);
+        }
+
+        function incrementDeletedCount() {
+            const current = getDeletedCount();
+            const newCount = current + 1;
+            setDeletedCount(newCount);
+            return newCount;
+        }
+
+        // =============================================
+        // LOAD STATISTICS
+        // =============================================
+        function loadStatistics() {
+            console.log('📊 Loading statistics...');
+            
+            fetch('../../php/admin/admin_dashboard.php?v=' + Date.now())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+                    
+                    document.getElementById('statTotalUsers').innerText = data.total_users || 0;
+                    document.getElementById('statDeletedUsers').innerText = getDeletedCount();
+                    
+                    console.log('📊 Active: ' + data.total_users + ', Deleted: ' + getDeletedCount());
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('statTotalUsers').innerText = "❌";
+                });
+        }
+
+        // =============================================
+        // CHECK FOR DELETIONS
+        // =============================================
+        function checkForDeletions() {
+            console.log('🔍 Checking for deletions...');
+            
+            if (localStorage.getItem('userDeleted') === 'true') {
+                console.log('🔄 User was deleted! Incrementing count...');
+                const newCount = incrementDeletedCount();
+                localStorage.removeItem('userDeleted');
+                
+                // Flash the deleted card to show update
+                const card = document.getElementById('deletedCard');
+                card.classList.add('flash-update');
+                setTimeout(() => card.classList.remove('flash-update'), 600);
+                
+                loadStatistics();
+            }
+        }
+
+        // =============================================
+        // PAGE LOAD
+        // =============================================
+        window.onload = function() {
+            console.log('📄 Dashboard loaded');
+            
+            fetch('admin_header.html?v=' + Date.now())
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('header-placeholder').innerHTML = data;
+                    
+                    // Highlight active tab
+                    const dashboardTab = document.getElementById("nav-dashboard");
+                    const managerTab = document.getElementById("nav-manager");
+                    
+                    if(managerTab) managerTab.classList.remove("active");
+                    if(dashboardTab) dashboardTab.classList.add("active");
+                })
+                .catch(err => console.log("Header loaded silently."));
+            
+            document.body.style.paddingTop = "90px";
+            
+            // =============================================
+            // CHECK FOR DELETIONS ON LOAD
+            // =============================================
+            checkForDeletions();
+            
+            // Load statistics
+            loadStatistics();
+
+            // =============================================
+            // CHECK WHEN PAGE BECOMES VISIBLE (tab switch)
+            // =============================================
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('👁️ Page became visible, checking for deletions...');
+                    checkForDeletions();
+                }
+            });
+
+            // =============================================
+            // LISTEN FOR STORAGE EVENTS (other tabs)
+            // =============================================
+            window.addEventListener('storage', function(event) {
+                console.log('📡 Storage event:', event.key, event.newValue);
+                
+                if (event.key === 'userDeleted' && event.newValue === 'true') {
+                    console.log('🔄 Delete detected from another tab!');
+                    const newCount = incrementDeletedCount();
+                    localStorage.removeItem('userDeleted');
+                    loadStatistics();
+                    
+                    const card = document.getElementById('deletedCard');
+                    card.classList.add('flash-update');
+                    setTimeout(() => card.classList.remove('flash-update'), 600);
+                }
+            });
+
+            // =============================================
+            // CHECK EVERY 3 SECONDS (fallback)
+            // =============================================
+            setInterval(function() {
+                checkForDeletions();
+            }, 3000);
+        };
+    </script>
+</body>
+</html>
