@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Buddy App</title>
+    <script>
+        function setFocus(){
+            document.frmLogin.username.value="";
+            document.frmLogin.pwd.value="";
+            document.frmLogin.role_user.checked=true;
+            document.frmLogin.username.focus();
+        }
+    </script>
+    <style>
+        /* CSS Variables - Blue Theme */
+        :root {
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --border-color: #220067;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --text-light: #ffffff;
+            --accent-primary: #3498db;
+            --accent-primary-hover: #2980b9;
+            --accent-secondary: #2ecc71;
+            --accent-secondary-hover: #27ae60;
+            --input-bg: #ffffff;
+            --input-border: #dfe6e9;
+            --input-focus-border: #3498db;
+            --btn-login: #3498db;
+            --btn-login-shadow: #220067;
+            --btn-reset: #dfe6e9;
+            --btn-reset-shadow: #b2bec3;
+            --link-color: #3498db;
+            --link-hover: #2980b9;
+        }
+
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Fredoka One', 'Nunito', 'Comic Sans MS', sans-serif;
+        }
+
+        /* Video Background - Full screen dynamic */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Main container - flex to position login box on the right */
+        .login-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            padding: 40px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Chunky, rounded card container - Login Box */
+        form[name="frmLogin"] {
+            background-color: var(--card-bg);
+            border: 4px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 380px;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        form[name="frmLogin"]:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Decorative Icon */
+        form[name="frmLogin"]::before {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            font-size: 32px;
+            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none !important;
+        }
+
+        td {
+            border: none !important;
+            padding: 10px 0;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* Login Title */
+        .login-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #ffffff;
+            background: linear-gradient(135deg, #0a0090, #74b9ff);
+            padding: 10px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            margin: 0 0 10px 0;
+            box-shadow: 0 4px 0px #220067;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 100%;
+        }
+
+        .login-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        /* Soft rounded custom input controls */
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 3px solid var(--input-border);
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--input-focus-border);
+            background-color: #f0f8ff;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+        }
+
+        .role-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            margin: 0;
+            accent-color: var(--accent-primary);
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+
+        .role-label {
+            font-size: 14px;
+            color: var(--text-main);
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        input[type="submit"] {
+            background: linear-gradient(135deg, #0a0090, #74b9ff);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: bold;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0px var(--btn-login-shadow);
+            transition: transform 0.1s, box-shadow 0.1s;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        input[type="submit"]:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0px var(--btn-login-shadow);
+        }
+
+        input[type="button"] {
+            background-color: var(--btn-reset);
+            color: var(--text-main);
+            font-size: 15px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0px var(--btn-reset-shadow);
+            transition: transform 0.1s, box-shadow 0.1s;
+            flex: 1;
+            min-width: 70px;
+        }
+
+        input[type="button"]:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0px var(--btn-reset-shadow);
+        }
+
+        /* Sign up link */
+        .signup-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .signup-link a {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 2px dashed var(--link-color);
+            padding-bottom: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .signup-link a:hover {
+            color: var(--link-hover);
+            border-bottom-color: var(--link-hover);
+        }
+
+        tr:last-child td {
+            padding-top: 15px;
+            text-align: center;
+        }
+
+        /* Password toggle button */
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-wrapper input {
+            padding-right: 42px;
+        }
+
+        .toggle-pwd-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            z-index: 10;
+        }
+
+        .toggle-pwd-btn svg {
+            stroke: #a98467;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .login-container {
+                padding: 40px 50px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                justify-content: center;
+                padding: 20px;
+            }
+
+            form[name="frmLogin"] {
+                max-width: 100%;
+                padding: 30px 25px;
+            }
+
+            .login-title {
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 15px;
+            }
+
+            form[name="frmLogin"] {
+                padding: 20px 18px;
+                border-radius: 18px;
+            }
+
+            .login-title {
+                font-size: 22px;
+                padding: 8px 20px;
+            }
+
+            input[type="submit"], input[type="button"] {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+
+            .btn-group {
+                gap: 6px;
+            }
+
+            td {
+                padding: 6px 0;
+                font-size: 13px;
+            }
+
+            input[type="text"], input[type="password"] {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@300;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Video Background -->
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="../vid/BUDDY.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Main Container -->
+    <div class="login-container">
+
+        <!-- Login Form -->
+        <form name="frmLogin" method="post" action="../php/index.php">
+            <table border="0" align="center">
+            
+                <tr align="center">
+                    <td colspan="2">
+                        <div class="login-title">LOGIN</div>
+                        <div class="login-subtitle">Sign in to your account</div>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="width: 30%;">USERNAME</td>
+                    <td><input type="text" name="username" value="" autofocus required placeholder="Enter your username" /></td>
+                </tr>
+                
+                <tr>
+                    <td>PASSWORD</td>
+                    <td>
+                        <div class="password-wrapper">
+                            <input type="password" id="userPassword" name="pwd" value="" required placeholder="Enter your password" />
+                            <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#a98467" style="width: 20px; height: 20px;">
+                                    <path id="eyePathClosed" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                    <path id="eyePathOpen" style="display: none;" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                    <path id="eyePathOpenPupil" style="display: none;" stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>ROLE</td>
+                    <td>
+                        <div class="role-wrapper">
+                            <input type="checkbox" name="role_user" id="roleUser" value="User" checked />
+                            <label for="roleUser" class="role-label">User</label>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr align="center">
+                    <td colspan="2">
+                        <div class="btn-group">
+                            <input type="submit" name="Login" value="Login"/>
+                            <input type="button" name="Reset" value="Reset" onclick="setFocus()"/>
+                        </div>
+                        <div class="signup-link">
+                            Don't have an account? <a href="sign-up.html">Sign Up</a>
+                        </div>
+                    </td>
+                </tr>
+                
+            </table>
+        </form>
+    </div>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('userPassword');
+            const eyePathClosed = document.getElementById('eyePathClosed');
+            const eyePathOpen = document.getElementById('eyePathOpen');
+            const eyePathOpenPupil = document.getElementById('eyePathOpenPupil');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyePathClosed.style.display = 'none';
+                eyePathOpen.style.display = 'block';
+                eyePathOpenPupil.style.display = 'block';
+            } else {
+                passwordInput.type = 'password';
+                eyePathClosed.style.display = 'block';
+                eyePathOpen.style.display = 'none';
+                eyePathOpenPupil.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

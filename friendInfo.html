@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends Info Management System</title>
+    <style>
+        :root {
+            --bg-color: #dbeafe;
+            --card-bg: #ffffff;
+            --border-color: #93c5fd;
+            --text-main: #1e3a5f;
+            --text-muted: #64748b;
+            --btn-blue: #2563eb;
+            --btn-blue-hover: #1d4ed8;
+            --btn-blue-shadow: #1a3a8a;
+            --accent-blue: #3b82f6;
+            --accent-blue-shadow: #1a3a8a;
+            --accent-sand: #dbeafe;
+            --accent-sand-shadow: #93c5fd;
+            --accent-red: #f87171;
+            
+            --ac-green: #2563eb;
+            --ac-green-shadow: #1a3a8a;
+            --ac-orange: #3b82f6;
+            --ac-orange-shadow: #1a3a8a;
+            --ac-yellow: #93c5fd;
+            --ac-yellow-shadow: #60a5fa;
+            --ac-sand: #dbeafe;
+            --ac-sand-shadow: #93c5fd;
+            --ac-red: #f87171;
+        }
+
+        #bg-video { position: fixed; top: 0; left: 0; min-width: 100%; min-height: 100%; width: auto; height: auto; object-fit: cover;z-index: -1; }
+        body { background-color: #1a2a3a; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 100px 10px 40px 10px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); position: relative; z-index: 1; }
+        .container { width: 100%; max-width: 600px; margin-top: 10px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 5px; }
+        .title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .btn-add-toggle { background-color: var(--btn-blue); color: #ffffff; font-size: 14px; font-weight: bold; padding: 10px 18px;border: none;border-radius: 12px;cursor: pointer;box-shadow: 0 4px 0px var(--ac-green-shadow);transition: transform 0.1s, box-shadow 0.1s;}
+        .btn-add-toggle:hover { background-color: var(--btn-blue-hover); }
+        .btn-add-toggle:active { transform: translateY(3px); box-shadow: 0 1px 0px var(--ac-green-shadow);}
+        .search-wrapper { margin-bottom: 20px; width: 100%; box-sizing: border-box;}
+
+        .search-input {
+            width: 100%;
+            padding: 12px 18px;
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+            outline: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .search-input:focus {
+            border-color: var(--btn-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .form-card {
+            background-color: rgba(255, 255, 255, 0.92);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            display: none; 
+            width: 100%;
+            box-shadow: 0 6px 0px var(--border-color);
+            margin-bottom: 30px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* FIXED: Use table display for proper layout */
+        .form-card {
+            display: none;
+        }
+
+        .form-card.visible {
+            display: table;
+        }
+
+        .left-panel {
+            display: table-cell;
+            width: 35%;
+            border-right: 3px dashed var(--border-color);
+            text-align: center;
+            vertical-align: middle;
+            padding: 30px 15px;
+            background-color: rgba(248, 250, 255, 0.8);
+        }
+
+        .photo-upload-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .circle-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #ffffff; 
+            display: flex;
+            align-items: flex-end; 
+            justify-content: center;
+            box-sizing: border-box;
+            overflow: hidden; 
+            border: 3px solid var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .circle-photo:hover {
+            border-color: var(--btn-blue);
+        }
+
+        .avatar-placeholder {
+            width: 75%;
+            height: 75%;
+            fill: var(--border-color);
+        }
+
+        .camera-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: var(--btn-blue);
+            color: #ffffff;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ffffff; 
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
+
+        .hidden-file-input {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+        }
+
+        .underline-name {
+            display: inline-block;
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 15px;
+            border-bottom: 2px dashed var(--btn-blue);
+            padding-bottom: 2px;
+            min-width: 60px;
+            text-transform: uppercase;
+        }
+
+        .right-panel {
+            display: table-cell;
+            width: 65%;
+            padding: 25px 20px;
+            vertical-align: top;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--btn-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            background-color: #ffffff;
+        }
+
+        .actions-row {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .btn {
+            font-size: 13px;
+            font-weight: bold;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-left: 6px;
+            display: inline-block;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-save {
+            background-color: var(--btn-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 0px var(--ac-orange-shadow);
+        }
+        .btn-save:hover {
+            background-color: var(--btn-blue-hover);
+        }
+        .btn-save:active { transform: translateY(3px); box-shadow: 0 1px 0px var(--ac-orange-shadow); }
+
+        .btn-clear {
+            background-color: var(--ac-sand);
+            color: var(--text-main);
+            box-shadow: 0 4px 0px var(--ac-sand-shadow);
+        }
+        .btn-clear:active { transform: translateY(3px); box-shadow: 0 1px 0px var(--ac-sand-shadow); }
+
+        .list-container {
+            background-color: rgba(255, 255, 255, 0.92);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 6px 0px var(--border-color);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .list-header {
+            background-color: rgba(219, 234, 254, 0.8);
+            border-bottom: 3px solid var(--border-color);
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        .list-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 2px dashed var(--border-color);
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .list-row:last-child { border-bottom: none; }
+
+        .action-group { display: flex; align-items: center; gap: 8px; }
+
+        .btn-action {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-view { background-color: var(--btn-blue); box-shadow: 0 3px 0px var(--ac-green-shadow); }
+        .btn-view:hover { background-color: var(--btn-blue-hover); }
+        .btn-view:active { transform: translateY(2px); box-shadow: 0 1px 0px var(--ac-green-shadow); }
+        .btn-edit { background-color: var(--ac-yellow); color: var(--text-main); box-shadow: 0 3px 0px var(--ac-yellow-shadow); }
+        .btn-edit:active { transform: translateY(2px); box-shadow: 0 1px 0px var(--ac-yellow-shadow); }
+        .btn-delete-icon { background: none; border: none; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 50%;}
+        .btn-delete-icon:hover { background-color: var(--ac-red); filter: brightness(0.9); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(92, 64, 51, 0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center;}
+        .modal-content { background-color: rgba(255, 255, 255, 0.95); padding: 26px; border: 4px solid var(--border-color); width: 90%; max-width: 450px; border-radius: 24px; box-shadow: 0 12px 0px var(--border-color); position: relative; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);}
+        .modal-header { display: flex; align-items: center; gap: 18px; border-bottom: 2px dashed var(--border-color); padding-bottom: 16px; margin-bottom: 16px; }
+        .modal-avatar { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); background-color: white; }
+        .modal-title-desc h3 { margin: 0 0 4px 0; font-size: 20px; color: var(--text-main); font-weight: 800; }
+        .modal-title-desc span { font-size: 13px; font-weight: bold; color: var(--btn-blue); background-color: #ffffff; padding: 2px 10px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .info-row { display: flex; margin-bottom: 12px; font-size: 14px; }
+        .info-label { width: 32%; font-weight: 800; color: var(--text-muted); }
+        .info-value { width: 68%; font-weight: bold; color: var(--text-main); word-break: break-word; }
+        .modal-close-btn-friend { background-color: var(--btn-blue); color: white; border: none; border-radius: 12px; padding: 10px 24px; font-size: 13px; font-weight: bold; cursor: pointer; float: right; box-shadow: 0 4px 0px var(--ac-green-shadow); }
+        .modal-close-btn-friend:hover { background-color: var(--btn-blue-hover); }
+        .modal-close-btn-friend:active { transform: translateY(3px); box-shadow: 0 1px 0px var(--ac-green-shadow); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .form-card { display: none !important;}
+            .form-card.visible { display: block !important;}
+            .left-panel { display: block;width: 100%;border-right: none;border-bottom: 3px dashed var(--border-color);padding: 20px;}
+            .right-panel { display: block; width: 100%; padding: 18px 16px; }
+        }
+    </style>
+</head>
+
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="../../vid/USER1.mp4" type="video/mp4">
+    </video>
+
+    <div id="header-container"></div>
+
+    <div class="container">
+        <div class="top-bar">
+            <h2 class="title">Friends Manager</h2>
+            <button class="btn-add-toggle" onclick="toggleFormCard()">+ Add Friend Info</button>
+        </div>
+        
+        <form id="friendForm" class="form-card" method="POST" action="../../php/user/friendInfo.php" enctype="multipart/form-data">
+            <table border="0" cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse;">
+                <tr>
+                    <td class="left-panel" style="vertical-align: middle; text-align: center; padding: 30px 15px; width:35%;">
+                        <div class="photo-upload-wrapper">
+                            <div class="circle-photo">
+                                <svg id="avatarPreview" class="avatar-placeholder" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-4-8-4z"/>
+                                </svg>
+                            </div>
+                            <div class="camera-badge">
+                                <img src="https://img.icons8.com/ios-glyphs/90/ffffff/camera.png" style="width: 13px; height: 13px; object-fit: contain;">
+                            </div>
+                            <input type="file" id="photoInput" name="friend_pic" accept="image/*" class="hidden-file-input" onchange="previewPhoto()">
+                        </div>
+                        <div>
+                            <span class="underline-name" id="shortNameLabel">name</span>
+                        </div>
+                    </td>
+                    
+                    <td class="right-panel" style="vertical-align: top; padding: 25px 20px; width:65%;">
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" id="inputName" name="friend_name" placeholder="Name" required autocomplete="off"
+                                   oninput="document.getElementById('shortNameLabel').innerText = this.value.trim().split(' ')[0] || 'name'">
+                        </div>
+                        <div class="input-group">
+                            <label>Gender</label>
+                            <select id="inputGender" name="gender" required>
+                                <option value="" disabled selected hidden>Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Phone</label>
+                            <input type="text" id="inputPhone" name="phone" placeholder="no phone" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Email</label>
+                            <input type="email" id="inputEmail" name="email" placeholder="email" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Address Line 1</label>
+                            <input type="text" id="inputAddress1" name="address_line1" placeholder="house no./lot no./floor and building name" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Address Line 2</label>
+                            <input type="text" id="inputAddress2" name="address_line2" placeholder="number, street name/district" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Postcode</label>
+                            <input type="text" id="inputAddress3" name="postcode" placeholder="postcode and locality name" required>
+                        </div>
+                        <div class="input-group">
+                            <label>State</label>
+                            <select id="inputState" name="state" required>
+                                <option value="" disabled selected hidden>State</option>
+                                <option value="SELANGOR">SELANGOR</option>
+                                <option value="KUALA LUMPUR">KUALA LUMPUR</option>
+                                <option value="NEGERI SEMBILAN">NEGERI SEMBILAN</option>
+                                <option value="MELAKA">MELAKA</option>
+                                <option value="JOHOR">JOHOR</option>
+                                <option value="PERAK">PERAK</option>
+                                <option value="PAHANG">PAHANG</option>
+                                <option value="KEDAH">KEDAH</option>
+                                <option value="KELANTAN">KELANTAN</option>
+                                <option value="PERLIS">PERLIS</option>
+                                <option value="SABAH">SABAH</option>
+                                <option value="SARAWAK">SARAWAK</option>
+                                <option value="TERENGGANU">TERENGGANU</option>
+                                <option value="PULAU PINANG">PULAU PINANG</option>
+                            </select>
+                        </div>
+
+                        <div class="actions-row">
+                            <button type="reset" class="btn btn-clear" onclick="document.getElementById('shortNameLabel').innerText = 'name'">clear</button>
+                            <button type="submit" name="Save" class="btn btn-save">Save</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+        <div class="search-wrapper">
+            <input type="text" id="searchBar" class="search-input" placeholder="🔍 Search database records..." oninput="filterRecords()">
+        </div>
+
+        <div class="list-container">
+            <div class="list-header">📋 Saved Records List</div>
+            <div id="friendsListGrid">
+                <div id="emptyState" class="list-row" style="color: #a68b7c; justify-content: center; font-style: italic; padding: 20px;">
+                    Loading system file logs...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Friend Modal Component -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img id="modalImg" src="../../img/default_avatar.png" class="modal-avatar" alt="Friend Photo">
+                <div class="modal-title-desc">
+                    <h3 id="modalName">Friend Name</h3>
+                    <span id="modalGender">Gender Info</span>
+                </div>
+            </div>
+            
+            <div class="info-row"><div class="info-label">Phone:</div><div id="modalPhone" class="info-value">-</div></div>
+            <div class="info-row"><div class="info-label">Email:</div><div id="modalEmail" class="info-value">-</div></div>
+            <div class="info-row"><div class="info-label">Address 1:</div><div id="modalAddr1" class="info-value">-</div></div>
+            <div class="info-row"><div class="info-label">Address 2:</div><div id="modalAddr2" class="info-value">-</div></div>
+            <div class="info-row"><div class="info-label">Postcode:</div><div id="modalPostcode" class="info-value">-</div></div>
+            <div class="info-row"><div class="info-label">State:</div><div id="modalState" class="info-value">-</div></div>
+
+            <button class="modal-close-btn-friend" onclick="closeModal()">Close</button>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+    <script>
+    let allFriendsData = [];
+
+    // ============================================
+    // LOAD USER PROFILE DATA
+    // ============================================
+    function loadUserProfile() {
+        console.log('loadUserProfile() called');
+        fetch('../../php/user/user_profile.php?' + new Date().getTime())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data received from API:', data);
+                
+                if (data && !data.error) {
+                    console.log('Name:', data.name);
+                    console.log('Phone:', data.phone);
+                    console.log('Address:', data.address);
+                    console.log('Profile pic:', data.profile_pic);
+                    
+                    // Update header avatar
+                    const headerImg = document.getElementById('headerProfilePic');
+                    if (headerImg) {
+                        if (data.profile_pic && data.profile_pic !== '') {
+                            headerImg.src = '../../img/' + data.profile_pic + '?t=' + new Date().getTime();
+                        } else {
+                            headerImg.src = 'https://img.icons8.com/fluency-systems-filled/96/64748b/user-male-circle.png';
+                        }
+                        console.log('Header avatar updated');
+                    }
+                    
+                    // Update header name
+                    const nameSpan = document.getElementById('headerProfileName');
+                    if (nameSpan && data.name) {
+                        nameSpan.innerText = data.name;
+                        console.log('Header name updated to:', data.name);
+                    }
+                    
+                    // Populate modal fields
+                    const nameField = document.getElementById('setupName');
+                    if (nameField) {
+                        nameField.value = data.name || '';
+                        console.log('setupName set to:', nameField.value);
+                    }
+                    
+                    const phoneField = document.getElementById('setupPhone');
+                    if (phoneField) {
+                        phoneField.value = data.phone || '';
+                        console.log('setupPhone set to:', phoneField.value);
+                    }
+                    
+                    const addressField = document.getElementById('setupAddress');
+                    if (addressField) {
+                        addressField.value = data.address || '';
+                        console.log('setupAddress set to:', addressField.value);
+                    }
+                    
+                    // Notification badge
+                    const badge = document.getElementById('profileNotificationBadge');
+                    if (badge) {
+                        if (!data.phone || !data.address || data.phone.trim() === "" || data.address.trim() === "") {
+                            badge.classList.remove('hidden');
+                            console.log('Showing notification badge (incomplete profile)');
+                        } else {
+                            badge.classList.add('hidden');
+                            console.log('Hiding notification badge (complete profile)');
+                        }
+                    }
+                } else {
+                    console.log('Error or no data:', data);
+                }
+            })
+            .catch(err => console.error("Error loading profile data:", err));
+    }
+
+    // ============================================
+    // PHOTO PREVIEW
+    // ============================================
+    function initPhotoPreview() {
+        const photoInput = document.getElementById('setupPhoto');
+        if (photoInput) {
+            const newInput = photoInput.cloneNode(true);
+            photoInput.parentNode.replaceChild(newInput, photoInput);
+            
+            newInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const previewContainer = document.getElementById('photoPreviewContainer');
+                        const previewImg = document.getElementById('photoPreview');
+                        if (previewImg && previewContainer) {
+                            previewImg.src = event.target.result;
+                            previewContainer.style.display = 'block';
+                            console.log('Photo preview updated');
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+
+    function removePhotoPreview() {
+        const previewContainer = document.getElementById('photoPreviewContainer');
+        const photoInput = document.getElementById('setupPhoto');
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
+        }
+        if (photoInput) {
+            photoInput.value = '';
+        }
+    }
+
+    // ============================================
+    // PROFILE MODAL FUNCTIONS
+    // ============================================
+    function triggerProfileModal() {
+        const modal = document.getElementById('profileSetupModal');
+        if (modal) {
+            console.log('Opening profile modal');
+            loadUserProfile();
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('show'), 50);
+            setTimeout(() => initPhotoPreview(), 100);
+        }
+    }
+
+    function dismissProfileModal() {
+        const modal = document.getElementById('profileSetupModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+            removePhotoPreview();
+        }
+    }
+
+    function confirmSignOut(event) {
+        let verify = confirm("Are you sure you want to sign out of your profile session?");
+        if (!verify) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    // ============================================
+    // LOAD HEADER VIA FETCH
+    // ============================================
+    function loadHeader() {
+        console.log('Loading header...');
+        fetch('../../php/user/user_header.php?' + new Date().getTime())
+            .then(response => response.text())
+            .then(html => {
+                console.log('Header HTML received, inserting...');
+                document.getElementById('header-container').innerHTML = html;
+                
+                console.log('Header inserted, waiting to load profile data...');
+                setTimeout(function() {
+                    console.log('Loading profile data...');
+                    loadUserProfile();
+                    initPhotoPreview();
+                }, 500);
+                
+                // Close modal with Escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        dismissProfileModal();
+                    }
+                });
+            })
+            .catch(err => console.error('Error loading header:', err));
+    }
+
+    // Call loadHeader when page loads
+    loadHeader();
+
+    // ============================================
+    // PAGE FUNCTIONS
+    // ============================================
+    function toggleFormCard() {
+        var form = document.getElementById("friendForm");
+        if (form.classList.contains("visible")) {
+            form.classList.remove("visible");
+        } else {
+            form.classList.add("visible");
+        }
+    }
+
+    window.onload = function() {
+        loadSavedRecords();
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById("viewModal");
+            if (event.target === modal) closeModal();
+        }
+    }
+
+    function previewPhoto() {
+        const fileInput = document.getElementById('photoInput');
+        const previewContainer = document.querySelector('.circle-photo');
+        const oldAvatar = document.getElementById('avatarPreview');
+
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let img = document.getElementById('uploadedImg');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'uploadedImg';
+                    img.style.width = '100%'; 
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover'; 
+                    img.style.borderRadius = '50%';
+                    if (oldAvatar) oldAvatar.style.display = 'none';
+                    previewContainer.insertBefore(img, previewContainer.firstChild);
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    }
+
+    function loadSavedRecords() {
+        fetch('../../php/user/friendInfo.php')
+            .then(response => response.json())
+            .then(data => {
+                allFriendsData = Array.isArray(data) ? data : []; 
+                renderGrid(allFriendsData);
+            })
+            .catch(err => console.error("Error loading profile logs:", err));
+    }
+
+    function renderGrid(recordsList) {
+        const grid = document.getElementById('friendsListGrid');
+        grid.innerHTML = '';
+
+        if (!recordsList || recordsList.length === 0) {
+            grid.innerHTML = `
+                <div id="emptyState" class="list-row" style="color: #a68b7c; justify-content: center; font-style: italic; padding: 20px;">
+                    No records found matching your selection.
+                </div>`;
+            return;
+        }
+
+        recordsList.forEach(friend => {
+            const imgName = friend.friend_image ? friend.friend_image : 'default_avatar.png';
+            const row = document.createElement('div');
+            row.className = 'list-row';
+            
+            row.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="../../img/${imgName}" 
+                         style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); background-color: white;" 
+                         alt="profile" onerror="this.src='../../img/default_avatar.png';">
+                    <div style="display: flex; flex-direction: column;">
+                        <strong style="font-size: 15px; color: var(--text-main);">${friend.friend_name}</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); margin-top: 2px; font-weight: bold;">${friend.phone}</span>
+                    </div>
+                </div>
+                <div class="action-group">
+                    <button type="button" class="btn-action btn-view" onclick="viewFriend(${friend.friend_id})">View</button>
+                    <button type="button" class="btn-action btn-edit" onclick="editFriend(${friend.friend_id})">Edit</button>
+                    <button type="button" class="btn-delete-icon" onclick="deleteFriend(${friend.friend_id})" title="Cancel Record">
+                        <img src="https://img.icons8.com/material-outlined/24/e07a5f/cancel.png" style="width: 20px; height: 20px;">
+                    </button>
+                </div>
+            `;
+            grid.appendChild(row);
+        });
+    }
+
+    function filterRecords() {
+        const query = document.getElementById('searchBar').value.toLowerCase().trim();
+        const filtered = allFriendsData.filter(friend => {
+            const nameMatch = friend.friend_name ? friend.friend_name.toLowerCase().includes(query) : false;
+            const emailMatch = friend.email ? friend.email.toLowerCase().includes(query) : false;
+            const phoneMatch = friend.phone ? friend.phone.includes(query) : false;
+            return nameMatch || emailMatch || phoneMatch;
+        });
+        renderGrid(filtered);
+    }
+
+    function viewFriend(id) {
+        if (!id) return alert("Error: Missing profile row index context.");
+        fetch(`../../php/user/friendInfo.php?id=${id}`)
+            .then(response => response.json())
+            .then(friend => {
+                if (!friend || friend.error) return alert("Unable to fetch complete details.");
+                
+                document.getElementById('modalName').innerText = friend.friend_name || 'N/A';
+                document.getElementById('modalGender').innerText = friend.gender || 'Unspecified';
+                document.getElementById('modalPhone').innerText = friend.phone || '-';
+                document.getElementById('modalEmail').innerText = friend.email || '-';
+                document.getElementById('modalAddr1').innerText = friend.address_line1 || '-';
+                document.getElementById('modalAddr2').innerText = friend.address_line2 || '-';
+                document.getElementById('modalPostcode').innerText = friend.postcode || '-';
+                document.getElementById('modalState').innerText = friend.state || '-';
+
+                const imgName = friend.friend_image ? friend.friend_image : 'default_avatar.png';
+                document.getElementById('modalImg').src = `../../img/${imgName}`;
+                document.getElementById("viewModal").style.display = "flex";
+            })
+            .catch(err => alert("Network communication error recovering profile fields."));
+    }
+
+    function closeModal() { 
+        document.getElementById("viewModal").style.display = "none"; 
+    }
+
+    function editFriend(id) { 
+        if(id) window.location.href = `editFriend.html?id=${id}`; 
+    }
+
+    function deleteFriend(id) {
+        if (!id) return;
+        if (confirm("Are you sure you want to delete and permanently remove this record?")) {
+            const formData = new FormData();
+            formData.append('action', 'delete');
+            formData.append('friend_id', id);
+
+            fetch('../../php/user/friendInfo.php', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Record deleted successfully!");
+                    loadSavedRecords(); 
+                } else {
+                    alert("Error removing entry: " + (data.error || "Unknown error"));
+                }
+            })
+            .catch(err => alert("Network connection failure communicating with the backend framework."));
+        }
+    }
+    </script>
+</body>
+</html>

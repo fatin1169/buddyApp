@@ -1,0 +1,548 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Island Dashboard - Outback Analytics</title>
+    <style>
+        /* Blue Theme */
+        :root {
+            --bg-color: #dbeafe;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --border-color: #93c5fd;
+            --text-main: #1e3a5f;
+            --text-muted: #64748b;
+            --btn-blue: #2563eb;
+            --btn-blue-hover: #1d4ed8;
+            --accent-blue: #3b82f6;
+            --accent-blue-shadow: #1a3a8a;
+            --shadow-color: rgba(26, 58, 138, 0.2);
+            --danger-red: #ef4444;
+            --danger-shadow: #991b1b;
+        }
+
+        /* Video Background - FULL SCREEN NO FILTER */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Fallback background color if video doesn't load */
+        body {
+            background-color: #1a2a3a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 100px 10px 40px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-main);
+            position: relative;
+            z-index: 1;
+        }
+
+        .dashboard-grid {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Force neat 2-column split on screens */
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        /* Responsive collapse to single column on smaller screens */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Top Summary Cards Row */
+        .summary-row {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 8px;
+        }
+
+        .summary-card {
+            background-color: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 0px var(--accent-blue-shadow);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .summary-value {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--btn-blue);
+            margin: 10px 0 5px 0;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .dashboard-card {
+            background-color: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 0px var(--accent-blue-shadow);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 0px var(--accent-blue-shadow);
+        }
+
+        /* Span across columns on larger screens */
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        /* Table Styling for History */
+        .history-table-wrapper {
+            overflow-x: auto;
+            margin-top: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .history-table th {
+            background-color: #eff6ff;
+            color: var(--text-main);
+            padding: 12px 16px;
+            font-weight: 800;
+            font-size: 14px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .history-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .badge-active {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-deleted {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* CanvasJS Chart Overrides - Blue Theme */
+        .canvasjs-chart-container {
+            border-radius: 12px;
+        }
+
+        /* 
+           ULTIMATE WATERMARK ELIMINATION OVERRIDE 
+           Targets anchor elements, trial wrappers, and credit classes inside containers.
+        */
+        a.canvasjs-chart-credit,
+        .canvasjs-chart-credit,
+        .canvasjs-chart-container a,
+        [class*="canvasjs-chart-credit"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            width: 0 !important;
+            position: absolute !important;
+            top: -9999px !important;
+            left: -9999px !important;
+            z-index: -9999 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Video Background - NO FILTER -->
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="../../vid/USER3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Header will be loaded here -->
+    <div id="header-container"></div>
+
+    <!-- Summary Metrics -->
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-label">Active Friends</div>
+            <div id="activeFriendsCount" class="summary-value">0</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-label">Deleted Log History</div>
+            <div id="deletedFriendsCount" class="summary-value">0</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-title">📍 Friends Distribution by State</div>
+            <div id="stateChartContainer" style="height: 300px; width: 100%;"></div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-title">👥 Gender Analytics</div>
+            <div id="genderChartContainer" style="height: 300px; width: 100%;"></div>
+        </div>
+
+        <!-- NEW: Friend Logs and History Card -->
+        <div class="dashboard-card full-width-card">
+            <div class="card-title">📜 History & Changes Log</div>
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Friend Name</th>
+                            <th>State</th>
+                            <th>Gender</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading system logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+    <script>
+    
+    // ============================================
+    // WATERMARK DESTRUCTOR
+    // ============================================
+    function wipeWatermarks() {
+        const classes = ['.canvasjs-chart-credit', '[class*="canvasjs-chart-credit"]'];
+        classes.forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => el.remove());
+        });
+        
+        const containers = ['#stateChartContainer', '#genderChartContainer'];
+        containers.forEach(selector => {
+            const container = document.querySelector(selector);
+            if (container) {
+                const elements = container.querySelectorAll('*');
+                elements.forEach(el => {
+                    if (el.textContent && (el.textContent.includes('CanvasJS') || el.textContent.includes('Trial'))) {
+                        el.remove();
+                    }
+                });
+            }
+        });
+    }
+
+    const watermarkDestroyer = new MutationObserver(() => wipeWatermarks());
+    watermarkDestroyer.observe(document.body, { childList: true, subtree: true });
+    setInterval(wipeWatermarks, 200);
+
+    function loadUserProfile() {
+        fetch('../../php/user/user_profile.php?' + new Date().getTime())
+            .then(response => response.json())
+            .then(data => {
+                if (data && !data.error) {
+                    const headerImg = document.getElementById('headerProfilePic');
+                    if (headerImg) {
+                        if (data.profile_pic && data.profile_pic !== '') {
+                            headerImg.src = '../../img/' + data.profile_pic + '?t=' + new Date().getTime();
+                        } else {
+                            headerImg.src = 'https://img.icons8.com/fluency-systems-filled/96/64748b/user-male-circle.png';
+                        }
+                    }
+                    
+                    const nameSpan = document.getElementById('headerProfileName');
+                    if (nameSpan && data.name) nameSpan.innerText = data.name;
+                    
+                    const nameField = document.getElementById('setupName');
+                    if (nameField) nameField.value = data.name || '';
+                    
+                    const phoneField = document.getElementById('setupPhone');
+                    if (phoneField) phoneField.value = data.phone || '';
+                    
+                    const addressField = document.getElementById('setupAddress');
+                    if (addressField) addressField.value = data.address || '';
+                }
+            })
+            .catch(err => console.error("Error loading profile data:", err));
+    }
+
+    function initPhotoPreview() {
+        const photoInput = document.getElementById('setupPhoto');
+        if (photoInput) {
+            const newInput = photoInput.cloneNode(true);
+            photoInput.parentNode.replaceChild(newInput, photoInput);
+            newInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const previewContainer = document.getElementById('photoPreviewContainer');
+                        const previewImg = document.getElementById('photoPreview');
+                        if (previewImg && previewContainer) {
+                            previewImg.src = event.target.result;
+                            previewContainer.style.display = 'block';
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+
+    function removePhotoPreview() {
+        const previewContainer = document.getElementById('photoPreviewContainer');
+        const photoInput = document.getElementById('setupPhoto');
+        if (previewContainer) previewContainer.style.display = 'none';
+        if (photoInput) photoInput.value = '';
+    }
+
+    function triggerProfileModal() {
+        const modal = document.getElementById('profileSetupModal');
+        if (modal) {
+            loadUserProfile();
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('show'), 50);
+            setTimeout(() => initPhotoPreview(), 100);
+        }
+    }
+
+    function dismissProfileModal() {
+        const modal = document.getElementById('profileSetupModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+            removePhotoPreview();
+        }
+    }
+
+    function confirmSignOut(event) {
+        let verify = confirm("Are you sure you want to sign out of your profile session?");
+        if (!verify) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    function loadHeader() {
+        fetch('../../php/user/user_header.php?' + new Date().getTime())
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('header-container').innerHTML = html;
+                setTimeout(function() {
+                    loadUserProfile();
+                    initPhotoPreview();
+                }, 500);
+                
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') dismissProfileModal();
+                });
+            })
+            .catch(err => console.error('Error loading header:', err));
+    }
+
+    loadHeader();
+
+    // ============================================
+    // SINGLE DB REQUEST FOR CHARTS & LOGS
+    // ============================================
+    (function() {
+        fetch('../../php/user/friendInfo.php?dashboard=true&t=' + new Date().getTime())
+            .then(res => res.json())
+            .then(data => {
+                let activeFriends = [];
+                let deletedFriends = [];
+
+                if (data && typeof data === 'object' && !Array.isArray(data)) {
+                    activeFriends = Array.isArray(data.active) ? data.active : [];
+                    deletedFriends = Array.isArray(data.deleted) ? data.deleted : [];
+                } else if (Array.isArray(data)) {
+                    activeFriends = data;
+                }
+
+                // Update UI Counters
+                document.getElementById('activeFriendsCount').innerText = activeFriends.length;
+                document.getElementById('deletedFriendsCount').innerText = deletedFriends.length;
+
+                const stateCounts = {};
+                const genderCounts = { "Male": 0, "Female": 0 };
+
+                activeFriends.forEach(f => {
+                    if (f.state) {
+                        stateCounts[f.state] = (stateCounts[f.state] || 0) + 1;
+                    }
+                    if (f.gender) {
+                        if (f.gender.toLowerCase() === 'male' || f.gender.toLowerCase() === 'm') {
+                            genderCounts["Male"]++;
+                        } else if (f.gender.toLowerCase() === 'female' || f.gender.toLowerCase() === 'f') {
+                            genderCounts["Female"]++;
+                        }
+                    }
+                });
+
+                const stateDataPoints = Object.keys(stateCounts).map(state => {
+                    return { label: state, y: stateCounts[state] };
+                });
+
+                // State Bar Chart
+                const stateChart = new CanvasJS.Chart("stateChartContainer", {
+                    animationEnabled: true,
+                    theme: "light2",
+                    backgroundColor: "rgba(255,255,255,0)",
+                    axisX: {
+                        labelFontColor: "#1e3a5f",
+                        labelFontWeight: "bold",
+                        lineColor: "#93c5fd",
+                        tickColor: "#93c5fd"
+                    },
+                    axisY: {
+                        labelFontColor: "#1e3a5f",
+                        labelFontWeight: "bold",
+                        lineColor: "#93c5fd",
+                        tickColor: "#93c5fd",
+                        gridColor: "rgba(147, 197, 253, 0.3)",
+                        interval: 1, // Restrict Y-axis increments to WHOLE numbers only
+                        minimum: 0
+                    },
+                    data: [{
+                        type: "bar",
+                        color: "#3b82f6",
+                        highlightColor: "#2563eb",
+                        cornerRadius: 8,
+                        dataPoints: stateDataPoints.length ? stateDataPoints : [{ label: "No Friends Found", y: 0 }]
+                    }]
+                });
+                stateChart.render();
+
+                // Gender Pie Chart
+                const genderChart = new CanvasJS.Chart("genderChartContainer", {
+                    animationEnabled: true,
+                    theme: "light2",
+                    backgroundColor: "rgba(255,255,255,0)",
+                    data: [{
+                        type: "pie",
+                        startAngle: 240,
+                        yValueFormatString: "##0' friends'",
+                        indexLabel: "{label} {y}",
+                        indexLabelFontColor: "#1e3a5f",
+                        indexLabelFontWeight: "bold",
+                        dataPoints: [
+                            { y: genderCounts["Male"], label: "Male", color: "#3b82f6" },
+                            { y: genderCounts["Female"], label: "Female", color: "#93c5fd" }
+                        ]
+                    }]
+                });
+                genderChart.render();
+                
+                // Render Logs Table directly from the database response
+                renderDatabaseLogs(activeFriends, deletedFriends);
+            })
+            .catch(err => console.error("Error drawing charts:", err));
+    })();
+
+    // ============================================
+    // RENDER DATABASE LOGS TABLE
+    // ============================================
+    function renderDatabaseLogs(activeList, deletedList) {
+        const historyTableBody = document.getElementById('historyTableBody');
+        historyTableBody.innerHTML = '';
+
+        // Combine database active list and database deleted list
+        const combinedList = [
+            ...activeList.map(f => ({ ...f, status: 'active' })),
+            ...deletedList.map(f => ({ ...f, status: 'deleted' }))
+        ];
+
+        if (combinedList.length === 0) {
+            historyTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No logs found in database.</td></tr>`;
+            return;
+        }
+
+        combinedList.forEach(friend => {
+            const tr = document.createElement('tr');
+            const name = friend.friend_name || friend.name || "Unknown";
+            const state = friend.state || "N/A";
+            const gender = friend.gender || "N/A";
+            const isActive = friend.status === 'active';
+            const badgeClass = isActive ? 'badge-active' : 'badge-deleted';
+            const badgeLabel = isActive ? 'Active' : 'Deleted';
+
+            tr.innerHTML = `
+                <td style="font-weight: 700;">${name}</td>
+                <td>${state}</td>
+                <td>${gender}</td>
+                <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
+            `;
+            historyTableBody.appendChild(tr);
+        });
+
+        wipeWatermarks();
+    }
+    </script>
+</body>
+</html>
